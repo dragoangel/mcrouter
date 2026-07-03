@@ -58,7 +58,7 @@ jobs:
 
       - name: Open PR
         if: steps.resolve.outputs.latest != steps.resolve.outputs.current
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: "chore: bump mcrouter to ${{ steps.resolve.outputs.latest }}"
           branch: bump-mcrouter-version
