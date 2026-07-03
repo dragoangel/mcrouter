@@ -7,8 +7,10 @@ on:
       - main
     paths:
       - build.mcrouter.lock
+      - build.deps.lock
       - Dockerfile
       - patches/**
+      - scripts/deb-gen-package.sh
       - .github/workflows/publish-image.yml
   workflow_dispatch:
 
@@ -140,18 +142,19 @@ jobs:
           merge-multiple: true
           path: dist
 
-      - name: Create tag and GitHub release
+      - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.ver.outputs.version }}
         run: |
           set -euo pipefail
+          # Releases are immutable, so a same-version rebuild can't (and shouldn't)
+          # touch an existing release — skip it. The image tags are still
+          # re-pushed by the build job; bump the version to cut a new release.
           if gh release view "$VERSION" >/dev/null 2>&1; then
-            echo "Release $VERSION already exists; nothing to do."
+            echo "Release $VERSION already exists (immutable); skipping."
             exit 0
           fi
-          # Creates the tag at the current commit and publishes the release with
-          # the per-arch .deb packages attached.
           gh release create "$VERSION" \
             --target "$GITHUB_SHA" \
             --title "$VERSION" \
