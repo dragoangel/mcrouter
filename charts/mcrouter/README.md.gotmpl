@@ -1,0 +1,31 @@
+# {{ template "chart.name" . }} Helm chart
+
+Deploys [mcrouter](https://github.com/facebook/mcrouter), a memcached protocol router, using the
+maintained image published from this repository (`ghcr.io/dragoangel/mcrouter`).
+
+## Install
+
+```sh
+helm repo add dragoangel https://dragoangel.github.io/mcrouter
+helm repo update
+helm install mcrouter dragoangel/mcrouter
+```
+
+Or straight from source:
+
+```sh
+helm dependency build charts/mcrouter
+helm install mcrouter charts/mcrouter
+```
+
+To use an external memcached, set `memcached.enabled: false` and pass your own
+`mcrouterCommandParams.config`.
+
+{{ template "chart.valuesSection" . }}
+
+This table and `values.schema.json` are generated from `values.yaml` by
+`scripts/helm-gen-docs-and-schema.sh`; don't edit them by hand.
+
+## Attribution
+
+mcrouter itself is © Facebook/Meta, MIT-licensed.

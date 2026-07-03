@@ -1,0 +1,8 @@
+.DS_Store
+.git/
+.gitignore
+*.tmproj
+*.orig
+*.bak
+# helm-docs template — not needed in the packaged chart
+README.md.gotmpl

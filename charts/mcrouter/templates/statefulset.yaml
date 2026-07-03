@@ -1,0 +1,17 @@
+{{- if eq .Values.deploymentType "StatefulSet" }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "mcrouter.fullname" . }}
+  labels:
+    {{- include "mcrouter.labels" . | nindent 4 }}
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+spec:
+  serviceName: {{ include "mcrouter.fullname" . }}
+  replicas: {{ .Values.statefulset.replicas }}
+  selector:
+    matchLabels:
+      {{- include "mcrouter.selectorLabels" . | nindent 6 }}
+  {{- include "mcrouter.podTemplate" . | nindent 2 }}
+{{- end }}

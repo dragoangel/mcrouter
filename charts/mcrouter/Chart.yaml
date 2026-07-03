@@ -1,0 +1,31 @@
+apiVersion: v2
+name: mcrouter
+description: Mcrouter is a memcached protocol router for scaling memcached deployments.
+type: application
+# Chart version — bumped independently of appVersion.
+version: 0.1.0
+# Tracks the mcrouter image tag published from this repo (see build.mcrouter.lock).
+appVersion: "v2026.06.29.00"
+home: https://github.com/dragoangel/mcrouter
+icon: https://raw.githubusercontent.com/dragoangel/mcrouter/master/resources/logo.svg
+sources:
+  - https://github.com/dragoangel/mcrouter
+  - https://github.com/facebook/mcrouter
+maintainers:
+  - name: dragoangel
+    url: https://github.com/dragoangel
+annotations:
+  artifacthub.io/license: MIT
+  artifacthub.io/images: |
+    - name: mcrouter
+      image: ghcr.io/dragoangel/mcrouter:v2026.06.29.00
+  artifacthub.io/links: |
+    - name: source
+      url: https://github.com/dragoangel/mcrouter
+    - name: upstream
+      url: https://github.com/facebook/mcrouter
+dependencies:
+  - name: memcached
+    version: 0.13.3
+    repository: oci://registry-1.docker.io/cloudpirates
+    condition: memcached.enabled

@@ -1,0 +1,159 @@
+name: Publish Image
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - build.mcrouter.lock
+      - Dockerfile
+      - patches/**
+      - .github/workflows/publish-image.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/mcrouter
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 240
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Read pinned mcrouter version
+        id: ver
+        run: echo "version=$(cat build.mcrouter.lock)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push ${{ matrix.arch }}
+        id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: Dockerfile
+          platforms: linux/${{ matrix.arch }}
+          push: true
+          build-args: |
+            MCROUTER_VERSION=${{ steps.ver.outputs.version }}
+          tags: |
+            ${{ env.IMAGE }}:${{ steps.ver.outputs.version }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=image-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=image-${{ matrix.arch }}
+
+      - name: Sign ${{ matrix.arch }} image
+        env:
+          COSIGN_YES: "true"
+        run: cosign sign "${IMAGE}@${{ steps.build.outputs.digest }}"
+
+      - name: Export .deb
+        run: |
+          docker buildx build --target deb \
+            --platform linux/${{ matrix.arch }} \
+            --build-arg MCROUTER_VERSION=${{ steps.ver.outputs.version }} \
+            --cache-from type=gha,scope=image-${{ matrix.arch }} \
+            --output type=local,dest=deb-out .
+
+      - name: Upload .deb artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: deb-${{ matrix.arch }}
+          path: deb-out/*.deb
+          if-no-files-found: error
+
+  manifest:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Read pinned mcrouter version
+        id: ver
+        run: echo "version=$(cat build.mcrouter.lock)" >> "$GITHUB_OUTPUT"
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create and sign multi-arch manifests
+        env:
+          COSIGN_YES: "true"
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          set -euo pipefail
+          for tag in "$VERSION" latest; do
+            docker buildx imagetools create -t "${IMAGE}:${tag}" \
+              "${IMAGE}:${VERSION}-amd64" \
+              "${IMAGE}:${VERSION}-arm64"
+            digest="$(docker buildx imagetools inspect "${IMAGE}:${tag}" --format '{{.Manifest.Digest}}')"
+            cosign sign "${IMAGE}@${digest}"
+          done
+
+  release:
+    needs: manifest
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Read pinned mcrouter version
+        id: ver
+        run: echo "version=$(cat build.mcrouter.lock)" >> "$GITHUB_OUTPUT"
+
+      - name: Download .deb artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: deb-*
+          merge-multiple: true
+          path: dist
+
+      - name: Create tag and GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          set -euo pipefail
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            echo "Release $VERSION already exists; nothing to do."
+            exit 0
+          fi
+          # Creates the tag at the current commit and publishes the release with
+          # the per-arch .deb packages attached.
+          gh release create "$VERSION" \
+            --target "$GITHUB_SHA" \
+            --title "$VERSION" \
+            --generate-notes \
+            dist/*.deb

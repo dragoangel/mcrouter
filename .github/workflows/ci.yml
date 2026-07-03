@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build image (amd64)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Read pinned mcrouter version
+        id: ver
+        run: echo "version=$(cat build.mcrouter.lock)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build image (no push)
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: Dockerfile
+          platforms: linux/amd64
+          push: false
+          build-args: |
+            MCROUTER_VERSION=${{ steps.ver.outputs.version }}
+          # Read-only: consume the cache the master publish writes (shared scope).
+          # CI never writes it, so it can't evict/fragment master's layers, and
+          # branches still warm-start (GHA restores the default-branch cache).
+          cache-from: type=gha,scope=image-amd64
+
+  chart:
+    name: chart lint + render + drift
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: stable
+
+      - name: Lint and render (both controllers)
+        run: |
+          helm dependency build charts/mcrouter
+          helm lint charts/mcrouter
+          helm template t charts/mcrouter >/dev/null
+          helm template t charts/mcrouter --set deploymentType=DaemonSet >/dev/null
+
+      - name: values.schema.json and README.md are up to date
+        run: |
+          helm plugin install https://github.com/losisin/helm-values-schema-json --version v2.5.0 --verify=false
+          go install github.com/norwoodj/helm-docs/cmd/helm-docs@v1.14.2
+          export PATH="$PATH:$(go env GOPATH)/bin"
+          bash scripts/helm-gen-docs-and-schema.sh
+          git diff --exit-code charts/mcrouter/values.schema.json charts/mcrouter/README.md \
+            || { echo "::error::values.schema.json / README.md are stale — run scripts/helm-gen-docs-and-schema.sh"; exit 1; }

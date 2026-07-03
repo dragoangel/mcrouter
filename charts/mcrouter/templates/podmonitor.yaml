@@ -1,0 +1,18 @@
+{{- if and .Values.metrics.podMonitor.enabled .Values.metrics.enabled -}}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ include "mcrouter.fullname" . }}
+  labels:
+    {{- include "mcrouter.labels" . | nindent 4 }}
+spec:
+  podMetricsEndpoints:
+  - path: /metrics
+    port: monitoring
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      {{- include "mcrouter.selectorLabels" . | nindent 6 }}
+{{- end -}}
