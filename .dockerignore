@@ -1,0 +1,4 @@
+*
+!patches/
+!build.deps.lock
+!scripts/deb-gen-package.sh

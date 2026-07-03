@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="41 82 1432 1432" width="512" height="512">
+  <title>mcrouter</title>
+  <circle cx="757" cy="798" r="708" fill="#3e3e3e"/>
+  <path fill="none" stroke="#6fc7f9" stroke-width="118" stroke-linecap="round" stroke-linejoin="round"
+        d="M 314,781
+           L 314,990 A 89.5 89.5 0 0 0 493,990
+           L 493,528 A 89.5 89.5 0 0 1 672,528
+           L 672,990 A 89.5 89.5 0 0 0 851,990
+           L 851,528 A 89.5 89.5 0 0 1 1030,528
+           L 1030,990 A 89.5 89.5 0 0 0 1209,990
+           L 1209,781"/>
+</svg>

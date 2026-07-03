@@ -1,0 +1,189 @@
+# -- Override the chart name used in resource names and labels
+nameOverride: ""
+# -- Override the full resource name
+fullnameOverride: ""
+# -- Extra labels applied to all resources
+commonLabels: {}
+# -- Extra pod annotations
+podAnnotations: {}
+# -- Extra pod labels
+podLabels: {}
+# -- Image pull secrets for private registries
+imagePullSecrets: []
+
+image:
+  # -- Image registry
+  registry: ghcr.io
+  # @schema required: true
+  # -- Image repository (built and published from this repository)
+  repository: dragoangel/mcrouter
+  # -- Image tag; defaults to the chart appVersion when empty
+  tag: ""
+  # @schema enum: ["", Always, IfNotPresent, Never]
+  # -- Image pull policy
+  pullPolicy: ""
+
+# @schema enum: [StatefulSet, DaemonSet]
+# -- Workload type: StatefulSet or DaemonSet
+deploymentType: StatefulSet
+
+statefulset:
+  # -- Number of mcrouter replicas (StatefulSet)
+  replicas: 2
+  # @schema enum: [soft, hard]
+  # -- Pod anti-affinity: soft or hard
+  antiAffinity: soft
+
+daemonset:
+  # @schema minimum: 1 ; maximum: 65535
+  # -- Host port for the mcrouter pod (DaemonSet)
+  hostPort: 5000
+
+pdb:
+  # -- Create a PodDisruptionBudget (StatefulSet only)
+  create: true
+  # @schema type: [integer, string]
+  # -- Minimum available routers during voluntary disruptions
+  minAvailable: 1
+
+# @schema minimum: 1 ; maximum: 65535
+# -- Port mcrouter listens on
+port: 5000
+# -- Custom mcrouter JSON config. If unset, one is generated from the memcached
+# replicas. https://github.com/facebook/mcrouter/wiki/Config-Files
+# config: |
+# -- Extra CLI args appended to the mcrouter command (e.g. --fibers-max-pool-size=256)
+extraArgs: []
+# -- Kubernetes cluster DNS suffix (used to build memcached pod hostnames)
+clusterSuffix: cluster.local
+
+# -- Service for mcrouter (headless by default)
+service:
+  clusterIP: None
+  # @schema minimum: 1 ; maximum: 65535
+  port: 5000
+  annotations: {}
+  externalTrafficPolicy: null
+
+serviceAccount:
+  # -- Create a dedicated ServiceAccount
+  create: true
+  # -- ServiceAccount name (defaults to the fullname)
+  name: ""
+  # -- Annotations for the ServiceAccount
+  annotations: {}
+  # -- Mount the API token (mcrouter needs no cluster API access)
+  automountServiceAccountToken: false
+
+# -- mcrouter container resources
+resources:
+  limits:
+    memory: 86Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+# -- Node selector for the pods
+nodeSelector: {}
+# -- Tolerations for the pods
+tolerations: []
+# -- Priority class for the pods
+priorityClassName: ""
+
+# -- Pod-level security context (hardened: non-root uid 1001, seccomp RuntimeDefault)
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
+  fsGroup: 1001
+  seccompProfile:
+    type: RuntimeDefault
+
+# -- Container-level security context (no privilege escalation, read-only rootfs, all caps dropped)
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+livenessProbe:
+  # -- Enable the liveness probe (TCP on the mcrouter port)
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+readinessProbe:
+  # -- Enable the readiness probe (TCP on the mcrouter port)
+  enabled: true
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+# -- Extra environment variables for the mcrouter container (list of {name,value}
+# or valueFrom). e.g. GLIBCXX_FORCE_NEW=1 / MALLOC_ARENA_MAX=1 to curb RSS growth.
+extraEnvVars: []
+# -- Additional volumes for the pod
+extraVolumes: []
+# -- Additional volume mounts for the mcrouter container
+extraVolumeMounts: []
+# -- Extra raw manifests to render with the release (templated)
+extraObjects: []
+
+tmpfs:
+  # @schema enum: ["", Memory]
+  # -- Backing medium for the writable dirs: Memory (tmpfs) or "" (disk emptyDir)
+  medium: Memory
+  # -- Cap for /var/mcrouter (stats/fifos/config). Caps are not reservations.
+  runtimeSizeLimit: 16Mi
+  # -- Cap for /var/spool/mcrouter (async delete spool); raise for heavy reliable-delete use
+  spoolSizeLimit: 32Mi
+
+metrics:
+  # -- Run a Prometheus exporter sidecar (bring your own image)
+  enabled: false
+  podMonitor:
+    # -- Create a PodMonitor for the exporter
+    enabled: false
+  image:
+    # -- Exporter image registry
+    registry: ghcr.io
+    # -- Exporter image repository
+    repository: dev25/mcrouter_exporter
+    # -- Exporter image tag
+    tag: "0.5.0"
+  container:
+    # @schema minimum: 1 ; maximum: 65535
+    # -- Exporter metrics port
+    port: 9442
+  # -- Exporter container resources
+  resources:
+    limits:
+      memory: 24Mi
+    requests:
+      cpu: 50m
+      memory: 16Mi
+
+# -- CloudPirates memcached dependency (StatefulSet). Set enabled: false to point
+# mcrouter at an external memcached via the config value.
+memcached:
+  enabled: true
+  deploymentType: StatefulSet
+  replicaCount: 2
+  config:
+    memory: 128m
+    maxconns: 1024
+  resources:
+    limits:
+      memory: 160Mi
+    requests:
+      cpu: 100m
+      memory: 144Mi
+  pdb:
+    create: true
+    minAvailable: "1"

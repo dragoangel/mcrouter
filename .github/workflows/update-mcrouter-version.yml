@@ -1,0 +1,75 @@
+name: Update mcrouter version
+
+# Opens a PR bumping build.mcrouter.lock when upstream tags a newer version
+# (Dependabot can't track it — it's a plain file, not a package manifest).
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Resolve latest upstream tag
+        id: resolve
+        run: |
+          set -euo pipefail
+          # Upstream tags look like v2026.06.29.00. Sort by version, newest first.
+          tags="$(git ls-remote --tags --refs --sort='-v:refname' \
+                    https://github.com/facebook/mcrouter.git 'refs/tags/v[0-9]*')"
+          latest="${tags%%$'\n'*}"          # first (highest) line
+          latest="${latest##*refs/tags/}"   # strip "<sha>\trefs/tags/"
+          test -n "$latest"
+          current="$(cat build.mcrouter.lock)"
+          echo "Latest upstream: $latest / current pin: $current"
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+          echo "current=$current" >> "$GITHUB_OUTPUT"
+
+      - name: Bump pin and chart
+        if: steps.resolve.outputs.latest != steps.resolve.outputs.current
+        env:
+          LATEST: ${{ steps.resolve.outputs.latest }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          printf '%s\n' "$LATEST" > build.mcrouter.lock
+          # Re-pin the Meta deps to the new mcrouter version's era.
+          bash scripts/build-deps-update-lock.sh "$LATEST"
+          # Chart appVersion tracks the image; patch-bump the chart version so
+          # chart-releaser republishes the chart on merge.
+          chart=charts/mcrouter/Chart.yaml
+          sed -i "s/^appVersion:.*/appVersion: \"$LATEST\"/" "$chart"
+          # Keep the Artifact Hub image annotation in sync with appVersion.
+          sed -i "s#\(image: ghcr.io/${{ github.repository_owner }}/mcrouter:\).*#\1$LATEST#" "$chart"
+          ver="$(sed -n 's/^version: *//p' "$chart")"
+          IFS=. read -r major minor patch <<EOF
+          $ver
+          EOF
+          sed -i "s/^version:.*/version: ${major}.${minor}.$((patch + 1))/" "$chart"
+
+      - name: Open PR
+        if: steps.resolve.outputs.latest != steps.resolve.outputs.current
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "chore: bump mcrouter to ${{ steps.resolve.outputs.latest }}"
+          branch: bump-mcrouter-version
+          delete-branch: true
+          title: "chore: bump mcrouter to ${{ steps.resolve.outputs.latest }}"
+          body: |
+            Automated bump of the pinned upstream mcrouter version.
+
+            - `build.mcrouter.lock`: `${{ steps.resolve.outputs.current }}` → `${{ steps.resolve.outputs.latest }}`
+            - `build.deps.lock` re-pinned to the new version's era
+            - chart `appVersion` updated to match; chart `version` patch-bumped
+
+            On merge: the image rebuilds/republishes (`build.mcrouter.lock` change) and
+            the chart republishes (chart `version` bump).

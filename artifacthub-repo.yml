@@ -1,0 +1,7 @@
+# Artifact Hub repository metadata. Published to the gh-pages Helm repo root by
+# the release-chart workflow so Artifact Hub can verify ownership.
+# https://artifacthub.io/docs/topics/repositories/
+repositoryID: ""
+owners:
+  - name: dragoangel
+    email: ""
