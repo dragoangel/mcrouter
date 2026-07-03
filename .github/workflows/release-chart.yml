@@ -38,6 +38,9 @@ jobs:
         uses: helm/chart-releaser-action@v1
         with:
           charts_dir: charts
+          # Re-merging master without a chart version bump must be a no-op, not a
+          # failure: skip charts whose release already exists.
+          skip_existing: true
         env:
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
