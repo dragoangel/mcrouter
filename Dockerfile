@@ -1,4 +1,4 @@
-FROM ubuntu:24.04 AS builder
+FROM ubuntu:26.04 AS builder
 
 # Upstream ref to build: a tag (v2026.06.29.00) or SHA. Empty = default branch.
 ARG MCROUTER_VERSION=
@@ -69,7 +69,7 @@ RUN deb-gen-package /build/install "$MCROUTER_VERSION" /build
 FROM scratch AS deb
 COPY --from=builder /build/*.deb /
 
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
 ARG MCROUTER_VERSION
 ENV DEBIAN_FRONTEND=noninteractive
