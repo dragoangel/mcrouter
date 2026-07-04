@@ -5,10 +5,18 @@ maintained image published from this repository (`ghcr.io/dragoangel/mcrouter`).
 
 ## Install
 
+The chart is published as an OCI artifact to GHCR:
+
 ```sh
-helm repo add dragoangel https://dragoangel.github.io/mcrouter
-helm repo update
-helm install mcrouter dragoangel/mcrouter
+helm install mcrouter oci://ghcr.io/dragoangel/charts/mcrouter --version {{ template "chart.version" . }}
+```
+
+The chart is cosign-signed (keyless); verify it with:
+
+```sh
+cosign verify ghcr.io/dragoangel/charts/mcrouter:{{ template "chart.version" . }} \
+  --certificate-identity-regexp '^https://github.com/dragoangel/mcrouter/' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
 Or straight from source:
@@ -19,7 +27,7 @@ helm install mcrouter charts/mcrouter
 ```
 
 To use an external memcached, set `memcached.enabled: false` and pass your own
-`mcrouterCommandParams.config`.
+`config`.
 
 {{ template "chart.valuesSection" . }}
 

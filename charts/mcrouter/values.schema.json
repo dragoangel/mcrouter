@@ -8,6 +8,9 @@
         "commonLabels": {
             "type": "object"
         },
+        "config": {
+            "type": "string"
+        },
         "containerSecurityContext": {
             "type": "object",
             "properties": {

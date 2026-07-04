@@ -66,7 +66,7 @@ The container image installs only the stripped runtime package.
 | `ci.yml` | On PR: build-verify the image + lint/render the chart + schema/README drift check |
 | `publish-image.yml` | Build + push + cosign-sign multi-arch image; GitHub release with per-arch `.deb`s |
 | `update-mcrouter-version.yml` | Weekly PR bumping `build.mcrouter.lock` + `build.deps.lock` + chart |
-| `release-chart.yml` | Publish the Helm chart to `gh-pages` (chart-releaser) + Artifact Hub metadata |
+| `release-chart.yml` | Package + push the Helm chart to GHCR as an OCI artifact |
 
 ### Scripts
 

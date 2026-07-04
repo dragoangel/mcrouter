@@ -49,10 +49,10 @@ pdb:
 # @schema minimum: 1 ; maximum: 65535
 # -- Port mcrouter listens on
 port: 5000
-# -- Custom mcrouter JSON config. If unset, one is generated from the memcached
+# -- Custom mcrouter JSON config. If empty, one is generated from the memcached
 # replicas. https://github.com/facebook/mcrouter/wiki/Config-Files
-# config: |
-# -- Extra CLI args appended to the mcrouter command (e.g. --fibers-max-pool-size=256)
+config: ""
+# -- Extra CLI args appended to the mcrouter command (e.g. fibers-max-pool-size=256)
 extraArgs: []
 # -- Kubernetes cluster DNS suffix (used to build memcached pod hostnames)
 clusterSuffix: cluster.local
