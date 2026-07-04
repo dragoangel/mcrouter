@@ -8,13 +8,13 @@ maintained image published from this repository (`ghcr.io/dragoangel/mcrouter`).
 The chart is published as an OCI artifact to GHCR:
 
 ```sh
-helm install mcrouter oci://ghcr.io/dragoangel/charts/mcrouter --version 0.1.0
+helm install mcrouter oci://ghcr.io/dragoangel/charts/mcrouter --version 0.1.1
 ```
 
 The chart is cosign-signed (keyless); verify it with:
 
 ```sh
-cosign verify ghcr.io/dragoangel/charts/mcrouter:0.1.0 \
+cosign verify ghcr.io/dragoangel/charts/mcrouter:0.1.1 \
   --certificate-identity-regexp '^https://github.com/dragoangel/mcrouter/' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
@@ -45,7 +45,7 @@ To use an external memcached, set `memcached.enabled: false` and pass your own
 | extraVolumeMounts | list | `[]` | Additional volume mounts for the mcrouter container |
 | extraVolumes | list | `[]` | Additional volumes for the pod |
 | fullnameOverride | string | `""` | Override the full resource name |
-| image.pullPolicy | string | `""` | Image pull policy |
+| image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | image.registry | string | `"ghcr.io"` | Image registry |
 | image.repository | string | `"dragoangel/mcrouter"` | Image repository (built and published from this repository) |
 | image.tag | string | `""` | Image tag; defaults to the chart appVersion when empty |
@@ -58,7 +58,7 @@ To use an external memcached, set `memcached.enabled: false` and pass your own
 | livenessProbe.timeoutSeconds | int | `5` |  |
 | memcached | object | `{"config":{"maxconns":1024,"memory":"128m"},"deploymentType":"StatefulSet","enabled":true,"pdb":{"create":true,"minAvailable":"1"},"replicaCount":2,"resources":{"limits":{"memory":"160Mi"},"requests":{"cpu":"100m","memory":"144Mi"}}}` | CloudPirates memcached dependency (StatefulSet). Set enabled: false to point mcrouter at an external memcached via the config value. |
 | metrics.container.port | int | `9442` | Exporter metrics port |
-| metrics.enabled | bool | `false` | Run a Prometheus exporter sidecar (bring your own image) |
+| metrics.enabled | bool | `false` | Run a Prometheus exporter sidecar |
 | metrics.image.registry | string | `"ghcr.io"` | Exporter image registry |
 | metrics.image.repository | string | `"dev25/mcrouter_exporter"` | Exporter image repository |
 | metrics.image.tag | string | `"0.5.0"` | Exporter image tag |
