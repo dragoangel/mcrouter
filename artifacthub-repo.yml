@@ -1,7 +1,3 @@
-# Artifact Hub repository metadata. Published to the gh-pages Helm repo root by
-# the release-chart workflow so Artifact Hub can verify ownership.
+# Artifact Hub repository metadata for the OCI-hosted Helm chart.
 # https://artifacthub.io/docs/topics/repositories/
-repositoryID: ""
-owners:
-  - name: dragoangel
-    email: ""
+repositoryID: 9bab38fd-42bc-47e6-b0f2-387d0143e215

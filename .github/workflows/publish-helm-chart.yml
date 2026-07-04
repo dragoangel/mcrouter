@@ -1,4 +1,4 @@
-name: Release Chart
+name: Publish Helm Chart
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
       - main
     paths:
       - charts/**
-      - .github/workflows/release-chart.yml
+      - .github/workflows/publish-helm-chart.yml
   workflow_dispatch:
 
 permissions:

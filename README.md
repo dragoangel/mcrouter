@@ -5,6 +5,7 @@
 [![CI](https://github.com/dragoangel/mcrouter/actions/workflows/ci.yml/badge.svg)](https://github.com/dragoangel/mcrouter/actions/workflows/ci.yml)
 [![Publish Image](https://github.com/dragoangel/mcrouter/actions/workflows/publish-image.yml/badge.svg)](https://github.com/dragoangel/mcrouter/actions/workflows/publish-image.yml)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/mcrouter)](https://artifacthub.io/packages/search?repo=mcrouter)
 
 Builds [facebook/mcrouter](https://github.com/facebook/mcrouter) from source on Ubuntu 24.04 and
 publishes multi-arch, cosign-signed images to `ghcr.io/dragoangel/mcrouter`. Upstream ships no images
@@ -66,7 +67,8 @@ The container image installs only the stripped runtime package.
 | `ci.yml` | On PR: build-verify the image + lint/render the chart + schema/README drift check |
 | `publish-image.yml` | Build + push + cosign-sign multi-arch image; GitHub release with per-arch `.deb`s |
 | `update-mcrouter-version.yml` | Weekly PR bumping `build.mcrouter.lock` + `build.deps.lock` + chart |
-| `release-chart.yml` | Package + push the Helm chart to GHCR as an OCI artifact |
+| `publish-helm-chart.yml` | Package + push + cosign-sign the Helm chart to GHCR as an OCI artifact |
+| `publish-artifacthub-meta.yml` | On `artifacthub-repo.yml` change: push the metadata to GHCR for Artifact Hub |
 
 ### Scripts
 
