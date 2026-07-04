@@ -3,7 +3,7 @@ name: mcrouter
 description: Mcrouter is a memcached protocol router for scaling memcached deployments.
 type: application
 # Chart version — bumped independently of appVersion.
-version: 0.1.0
+version: 0.1.1
 # Tracks the mcrouter image tag published from this repo (see build.mcrouter.lock).
 appVersion: "v2026.06.29.00"
 home: https://github.com/dragoangel/mcrouter

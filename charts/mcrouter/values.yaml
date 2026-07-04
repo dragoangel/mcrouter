@@ -21,7 +21,7 @@ image:
   tag: ""
   # @schema enum: ["", Always, IfNotPresent, Never]
   # -- Image pull policy
-  pullPolicy: ""
+  pullPolicy: IfNotPresent
 
 # @schema enum: [StatefulSet, DaemonSet]
 # -- Workload type: StatefulSet or DaemonSet
@@ -145,7 +145,7 @@ tmpfs:
   spoolSizeLimit: 32Mi
 
 metrics:
-  # -- Run a Prometheus exporter sidecar (bring your own image)
+  # -- Run a Prometheus exporter sidecar
   enabled: false
   podMonitor:
     # -- Create a PodMonitor for the exporter
