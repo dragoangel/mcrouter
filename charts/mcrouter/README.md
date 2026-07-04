@@ -5,10 +5,18 @@ maintained image published from this repository (`ghcr.io/dragoangel/mcrouter`).
 
 ## Install
 
+The chart is published as an OCI artifact to GHCR:
+
 ```sh
-helm repo add dragoangel https://dragoangel.github.io/mcrouter
-helm repo update
-helm install mcrouter dragoangel/mcrouter
+helm install mcrouter oci://ghcr.io/dragoangel/charts/mcrouter --version 0.1.0
+```
+
+The chart is cosign-signed (keyless); verify it with:
+
+```sh
+cosign verify ghcr.io/dragoangel/charts/mcrouter:0.1.0 \
+  --certificate-identity-regexp '^https://github.com/dragoangel/mcrouter/' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
 Or straight from source:
@@ -19,7 +27,7 @@ helm install mcrouter charts/mcrouter
 ```
 
 To use an external memcached, set `memcached.enabled: false` and pass your own
-`mcrouterCommandParams.config`.
+`config`.
 
 ## Values
 
@@ -27,10 +35,11 @@ To use an external memcached, set `memcached.enabled: false` and pass your own
 |-----|------|---------|-------------|
 | clusterSuffix | string | `"cluster.local"` | Kubernetes cluster DNS suffix (used to build memcached pod hostnames) |
 | commonLabels | object | `{}` | Extra labels applied to all resources |
+| config | string | `""` | Custom mcrouter JSON config. If empty, one is generated from the memcached replicas. https://github.com/facebook/mcrouter/wiki/Config-Files |
 | containerSecurityContext | object | `{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":true}` | Container-level security context (no privilege escalation, read-only rootfs, all caps dropped) |
 | daemonset.hostPort | int | `5000` | Host port for the mcrouter pod (DaemonSet) |
 | deploymentType | string | `"StatefulSet"` | Workload type: StatefulSet or DaemonSet |
-| extraArgs | list | `[]` |  |
+| extraArgs | list | `[]` | Extra CLI args appended to the mcrouter command (e.g. fibers-max-pool-size=256) |
 | extraEnvVars | list | `[]` | Extra environment variables for the mcrouter container (list of {name,value} or valueFrom). e.g. GLIBCXX_FORCE_NEW=1 / MALLOC_ARENA_MAX=1 to curb RSS growth. |
 | extraObjects | list | `[]` | Extra raw manifests to render with the release (templated) |
 | extraVolumeMounts | list | `[]` | Additional volume mounts for the mcrouter container |
