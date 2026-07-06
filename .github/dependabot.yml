@@ -26,6 +26,10 @@ updates:
     groups:
       docker:
         patterns: ["*"]
+    # The ubuntu base image is bumped by hand: upstream
+    # mcrouter must support the new OS first.
+    ignore:
+      - dependency-name: ubuntu
     commit-message:
       prefix: chore
       include: scope
