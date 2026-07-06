@@ -2,7 +2,7 @@ apiVersion: v2
 name: mcrouter
 description: Mcrouter is a memcached protocol router for scaling memcached deployments.
 type: application
-version: 0.1.2
+version: 0.1.3
 appVersion: "v2026.06.29.00"
 home: https://github.com/dragoangel/mcrouter
 icon: https://raw.githubusercontent.com/dragoangel/mcrouter/master/resources/logo.svg
