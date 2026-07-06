@@ -8,13 +8,13 @@ maintained image published from this repository (`ghcr.io/dragoangel/mcrouter`).
 The chart is published as an OCI artifact to GHCR:
 
 ```sh
-helm install mcrouter oci://ghcr.io/dragoangel/charts/mcrouter --version 0.1.3
+helm install mcrouter oci://ghcr.io/dragoangel/charts/mcrouter --version 0.1.4
 ```
 
 The chart is cosign-signed (keyless); verify it with:
 
 ```sh
-cosign verify ghcr.io/dragoangel/charts/mcrouter:0.1.3 \
+cosign verify ghcr.io/dragoangel/charts/mcrouter:0.1.4 \
   --certificate-identity-regexp '^https://github.com/dragoangel/mcrouter/' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
@@ -62,7 +62,14 @@ To use an external memcached, set `memcached.enabled: false` and pass your own
 | metrics.image.registry | string | `"ghcr.io"` | Exporter image registry |
 | metrics.image.repository | string | `"dev25/mcrouter_exporter"` | Exporter image repository |
 | metrics.image.tag | string | `"0.5.0"` | Exporter image tag |
+| metrics.podMonitor.annotations | object | `{}` | Extra annotations for the PodMonitor object |
 | metrics.podMonitor.enabled | bool | `false` | Create a PodMonitor for the exporter |
+| metrics.podMonitor.honorLabels | bool | `false` | Honor labels exposed by the target over server-side labels |
+| metrics.podMonitor.interval | string | `""` | Scrape interval (e.g. 30s); Prometheus default when empty |
+| metrics.podMonitor.labels | object | `{}` | Extra labels for the PodMonitor object |
+| metrics.podMonitor.metricRelabelings | list | `[]` | Relabelings applied to samples before ingestion |
+| metrics.podMonitor.relabelings | list | `[]` | Relabelings applied to samples before scraping (e.g. map node name to instance) |
+| metrics.podMonitor.scrapeTimeout | string | `""` | Scrape timeout (e.g. 10s); Prometheus default when empty |
 | metrics.resources | object | `{"limits":{"memory":"24Mi"},"requests":{"cpu":"50m","memory":"16Mi"}}` | Exporter container resources |
 | nameOverride | string | `""` | Override the chart name used in resource names and labels |
 | nodeSelector | object | `{}` | Node selector for the pods |

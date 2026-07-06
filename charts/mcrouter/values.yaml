@@ -150,6 +150,20 @@ metrics:
   podMonitor:
     # -- Create a PodMonitor for the exporter
     enabled: false
+    # -- Scrape interval (e.g. 30s); Prometheus default when empty
+    interval: ""
+    # -- Scrape timeout (e.g. 10s); Prometheus default when empty
+    scrapeTimeout: ""
+    # -- Honor labels exposed by the target over server-side labels
+    honorLabels: false
+    # -- Extra labels for the PodMonitor object
+    labels: {}
+    # -- Extra annotations for the PodMonitor object
+    annotations: {}
+    # -- Relabelings applied to samples before scraping (e.g. map node name to instance)
+    relabelings: []
+    # -- Relabelings applied to samples before ingestion
+    metricRelabelings: []
   image:
     # -- Exporter image registry
     registry: ghcr.io
