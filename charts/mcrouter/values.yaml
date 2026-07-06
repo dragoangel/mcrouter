@@ -185,13 +185,14 @@ metrics:
 
 # -- CloudPirates memcached dependency (StatefulSet). Set enabled: false to point
 # mcrouter at an external memcached via the config value.
+# @default -- see values.yaml
 memcached:
   enabled: true
   deploymentType: StatefulSet
   replicaCount: 2
   config:
-    memory: 128m
-    maxconns: 1024
+    memoryLimit: 128
+    maxConnections: 1024
   resources:
     limits:
       memory: 160Mi
@@ -201,3 +202,6 @@ memcached:
   pdb:
     create: true
     minAvailable: "1"
+  service:
+    clusterIP: None
+    publishNotReadyAddresses: true

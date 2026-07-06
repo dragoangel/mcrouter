@@ -8,13 +8,13 @@ maintained image published from this repository (`ghcr.io/dragoangel/mcrouter`).
 The chart is published as an OCI artifact to GHCR:
 
 ```sh
-helm install mcrouter oci://ghcr.io/dragoangel/charts/mcrouter --version 0.1.4
+helm install mcrouter oci://ghcr.io/dragoangel/charts/mcrouter --version 0.2.0
 ```
 
 The chart is cosign-signed (keyless); verify it with:
 
 ```sh
-cosign verify ghcr.io/dragoangel/charts/mcrouter:0.1.4 \
+cosign verify ghcr.io/dragoangel/charts/mcrouter:0.2.0 \
   --certificate-identity-regexp '^https://github.com/dragoangel/mcrouter/' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
@@ -56,7 +56,7 @@ To use an external memcached, set `memcached.enabled: false` and pass your own
 | livenessProbe.periodSeconds | int | `10` |  |
 | livenessProbe.successThreshold | int | `1` |  |
 | livenessProbe.timeoutSeconds | int | `5` |  |
-| memcached | object | `{"config":{"maxconns":1024,"memory":"128m"},"deploymentType":"StatefulSet","enabled":true,"pdb":{"create":true,"minAvailable":"1"},"replicaCount":2,"resources":{"limits":{"memory":"160Mi"},"requests":{"cpu":"100m","memory":"144Mi"}}}` | CloudPirates memcached dependency (StatefulSet). Set enabled: false to point mcrouter at an external memcached via the config value. |
+| memcached | object | see values.yaml | CloudPirates memcached dependency (StatefulSet). Set enabled: false to point mcrouter at an external memcached via the config value. |
 | metrics.container.port | int | `9442` | Exporter metrics port |
 | metrics.enabled | bool | `false` | Run a Prometheus exporter sidecar |
 | metrics.image.registry | string | `"ghcr.io"` | Exporter image registry |

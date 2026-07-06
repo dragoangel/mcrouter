@@ -126,11 +126,11 @@
                 "config": {
                     "type": "object",
                     "properties": {
-                        "maxconns": {
+                        "maxConnections": {
                             "type": "integer"
                         },
-                        "memory": {
-                            "type": "string"
+                        "memoryLimit": {
+                            "type": "integer"
                         }
                     }
                 },
@@ -175,6 +175,17 @@
                                     "type": "string"
                                 }
                             }
+                        }
+                    }
+                },
+                "service": {
+                    "type": "object",
+                    "properties": {
+                        "clusterIP": {
+                            "type": "string"
+                        },
+                        "publishNotReadyAddresses": {
+                            "type": "boolean"
                         }
                     }
                 }
