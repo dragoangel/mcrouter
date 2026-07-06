@@ -73,32 +73,8 @@ jobs:
         with:
           go-version: stable
 
-      - name: Lint and render (both controllers)
-        run: |
-          helm dependency build charts/mcrouter
-          helm lint charts/mcrouter
-          helm template t charts/mcrouter >/dev/null
-          helm template t charts/mcrouter --set deploymentType=DaemonSet >/dev/null
-
-      - name: artifacthub.io/images matches rendered images
-        run: |
-          set -euo pipefail
-          # Images the chart actually deploys at its defaults (metrics sidecar on,
-          # memcached subchart off — the subchart documents its own image).
-          rendered="$(helm template t charts/mcrouter \
-            --set metrics.enabled=true --set memcached.enabled=false \
-            | grep -oE '^[[:space:]]*image:[[:space:]]*\S+' \
-            | awk '{print $2}' | sort -u)"
-          # Images declared in the artifacthub.io/images annotation.
-          declared="$(helm show chart charts/mcrouter \
-            | yq -r '.annotations."artifacthub.io/images"' \
-            | yq -r '.[].image' | sort -u)"
-          if ! diff <(echo "$rendered") <(echo "$declared") >/dev/null; then
-            echo "::error::artifacthub.io/images is out of sync with the images the chart renders (< rendered, > declared):"
-            diff <(echo "$rendered") <(echo "$declared") || true
-            exit 1
-          fi
-          echo "artifacthub.io/images matches rendered images"
+      - name: Lint, render, and check images
+        run: bash scripts/helm-lint.sh
 
       - name: values.schema.json and README.md are up to date
         run: |
