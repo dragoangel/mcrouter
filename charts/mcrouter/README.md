@@ -8,13 +8,13 @@ maintained image published from this repository (`ghcr.io/dragoangel/mcrouter`).
 The chart is published as an OCI artifact to GHCR:
 
 ```sh
-helm install mcrouter oci://ghcr.io/dragoangel/charts/mcrouter --version 0.1.2
+helm install mcrouter oci://ghcr.io/dragoangel/charts/mcrouter --version 0.1.3
 ```
 
 The chart is cosign-signed (keyless); verify it with:
 
 ```sh
-cosign verify ghcr.io/dragoangel/charts/mcrouter:0.1.2 \
+cosign verify ghcr.io/dragoangel/charts/mcrouter:0.1.3 \
   --certificate-identity-regexp '^https://github.com/dragoangel/mcrouter/' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
